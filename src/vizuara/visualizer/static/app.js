@@ -20,7 +20,7 @@ function renderLegend() {
 
 // ---------- graph ----------
 async function loadGraph() {
-  const r = await fetch("/api/graph");
+  const r = await fetch("api/graph");
   const data = await r.json();
   data.nodes.forEach((n) => state.nodesById.set(n.id, n));
   state.edges = data.edges;
@@ -217,7 +217,7 @@ async function inspectNode(nodeId) {
 
   const results = await Promise.all(
     chunks.map((c) =>
-      fetch(`/api/chunk/${encodeURIComponent(c.chunk_id)}`).then((r) => r.json())
+      fetch(`api/chunk/${encodeURIComponent(c.chunk_id)}`).then((r) => r.json())
     )
   );
   const body = results
@@ -234,7 +234,7 @@ async function inspectNode(nodeId) {
 }
 
 async function inspectChunk(chunkId) {
-  const r = await fetch(`/api/chunk/${encodeURIComponent(chunkId)}`);
+  const r = await fetch(`api/chunk/${encodeURIComponent(chunkId)}`);
   if (!r.ok) return;
   const c = await r.json();
   inspectNode(c.node_id);
@@ -292,7 +292,7 @@ chatForm.addEventListener("submit", async (e) => {
   pushUser(text);
   const thinking = pushThinking();
   try {
-    const r = await fetch("/api/query", {
+    const r = await fetch("api/query", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ question: text }),

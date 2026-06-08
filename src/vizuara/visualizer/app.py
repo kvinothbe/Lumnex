@@ -37,7 +37,11 @@ def healthz():
 
 @app.get("/")
 def index(request: Request):
-    return templates.TemplateResponse(request, "index.html")
+    # When mounted under a prefix (e.g. /wiki) the ASGI root_path tells us where
+    # we live, so the page can resolve its own static + /api assets relative to
+    # that prefix. Standalone, root_path is empty and base becomes "/".
+    base = (request.scope.get("root_path", "") or "") + "/"
+    return templates.TemplateResponse(request, "index.html", {"base": base})
 
 
 @app.get("/api/graph")

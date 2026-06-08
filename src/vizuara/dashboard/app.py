@@ -24,6 +24,13 @@ app = FastAPI(title="Vizuara — Operator Dashboard")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
+# Mount the wiki-explorer (visualizer) as a sub-app at /wiki so it's always
+# available on the same domain — no separate Railway service or URL needed.
+# The visualizer makes its own asset/API paths prefix-aware via root_path.
+from vizuara.visualizer.app import app as wiki_app  # noqa: E402
+
+app.mount("/wiki", wiki_app)
+
 
 @app.get("/healthz")
 def healthz():
@@ -38,7 +45,8 @@ def _nav(active: str) -> dict:
         "active": active,
         "auto_send_enabled": config.AUTO_SEND_ENABLED,
         "auto_send_threshold": config.AUTO_SEND_THRESHOLD,
-        "wiki_url": config.WIKI_EXPLORER_URL,
+        # Default to the in-process /wiki mount; allow an external override.
+        "wiki_url": config.WIKI_EXPLORER_URL or "/wiki/",
     }
 
 
