@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Confidence{% endblock %}
+{% block subtitle %}<p class="muted">MLP performance, ROC, and simulated shadow-week outcomes by threshold.</p>{% endblock %}
+
+{% block body %}
+{% if not rep.eval %}
+  <div class="card empty">
+    <h2>No confidence checkpoint yet</h2>
+    <p class="muted">Run <code>python -m vizuara.confidence.bootstrap</code> then <code>python -m vizuara.confidence.train</code>.</p>
+  </div>
+{% else %}
+<section class="kpis">
+  <div class="kpi">
+    <div class="kpi-label">Val F1 @ 0.5</div>
+    <div class="kpi-value">{{ '%.3f' % rep.eval['val_at_0.5'].f1 }}</div>
+    <div class="kpi-sub">P {{ '%.2f' % rep.eval['val_at_0.5'].precision }} · R {{ '%.2f' % rep.eval['val_at_0.5'].recall }}</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Best F1</div>
+    <div class="kpi-value">{{ '%.3f' % rep.eval.best_f1 }}</div>
+    <div class="kpi-sub">at threshold {{ '%.2f' % rep.eval.best_threshold_for_f1 }}</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Val MSE</div>
+    <div class="kpi-value">{{ '%.4f' % rep.eval.val_mse }}</div>
+    <div class="kpi-sub">{{ rep.eval.n_val }} held-out samples</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Current threshold</div>
+    <div class="kpi-value">{{ '%.2f' % rep.current_threshold }}</div>
+    <div class="kpi-sub">auto-send {{ 'ENABLED' if rep.auto_send_enabled else 'DISABLED' }}</div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>ROC by threshold</h2>
+  <table class="data-table">
+    <thead><tr><th class="r">Thr</th><th class="r">TPR</th><th class="r">FPR</th>
+        <th class="r">Precision</th><th class="r">Recall</th><th class="r">F1</th></tr></thead>
+    <tbody>
+      {% for p in rep.eval.roc_points %}
+      <tr class="{% if (p.threshold - rep.current_threshold)|abs < 0.05 %}row-highlight{% endif %}">
+        <td class="r mono">{{ '%.2f' % p.threshold }}</td>
+        <td class="r mono">{{ '%.3f' % p.tpr }}</td>
+        <td class="r mono">{{ '%.3f' % p.fpr }}</td>
+        <td class="r mono">{{ '%.3f' % p.precision }}</td>
+        <td class="r mono">{{ '%.3f' % p.recall }}</td>
+        <td class="r mono"><strong>{{ '%.3f' % p.f1 }}</strong></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+{% if rep.shadow %}
+<section class="card">
+  <h2>Simulated shadow-week outcomes</h2>
+  <p class="muted small">
+    Replays the {{ rep.shadow.thresholds[0].auto_count + rep.shadow.thresholds[0].accepted_count }}-sample
+    bootstrap set through the live MLP + router at each threshold. "Accept" is judge-similarity ≥ {{ rep.shadow.accept_bar }}.
+    Zero hallucination leaks at every threshold means the adversarial Source B drafts never auto-sent.
+  </p>
+  <table class="data-table">
+    <thead><tr><th class="r">Thr</th><th class="r">Auto-send %</th><th class="r">Accept-if-sent %</th>
+        <th class="r">Adversarial leaks</th><th class="r">Sensitive blocked</th></tr></thead>
+    <tbody>
+      {% for r in rep.shadow.thresholds %}
+      <tr class="{% if (r.threshold - rep.current_threshold)|abs < 0.05 %}row-highlight{% endif %}">
+        <td class="r mono">{{ '%.2f' % r.threshold }}</td>
+        <td class="r mono">{{ '%.1f' % (r.auto_rate * 100) }}%</td>
+        <td class="r mono">{{ '%.1f' % (r.acceptance_rate_among_auto * 100) }}%</td>
+        <td class="r mono">{{ r.hallucination_leak_count }}</td>
+        <td class="r mono">{{ r.sensitive_blocked }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
+<section class="card">
+  <h2>Change the threshold</h2>
+  <p class="muted">
+    The threshold is set in <code>.env</code> as <code>VIZUARA_AUTO_SEND_THRESHOLD</code>.
+    Pick a row from the ROC / shadow table above, set the env var, and restart the dashboard.
+    PLAN.md note: the live (non-simulated) shadow week must approve the chosen threshold before
+    you flip <code>VIZUARA_AUTO_SEND_ENABLED=true</code>.
+  </p>
+</section>
+{% endif %}
+{% endblock %}

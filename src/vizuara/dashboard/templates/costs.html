@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Costs{% endblock %}
+{% block subtitle %}<p class="muted">Per-stage USD over the last {{ days }} days. Source: <code>data/cost_log.jsonl</code>.</p>{% endblock %}
+
+{% block body %}
+<form class="filter-bar" method="GET" action="/costs">
+  <label>
+    Window
+    <select name="days" onchange="this.form.submit()">
+      {% for d in [1, 3, 7, 14, 30] %}
+      <option value="{{ d }}" {% if d == days %}selected{% endif %}>{{ d }} days</option>
+      {% endfor %}
+    </select>
+  </label>
+</form>
+
+<section class="card">
+  <h2>Per stage</h2>
+  {% if not cost.per_stage %}<p class="muted">No data in this window.</p>{% else %}
+  <table class="data-table">
+    <thead><tr>
+      <th>Stage</th><th class="r">Calls</th><th class="r">In tok</th><th class="r">Out tok</th>
+      <th class="r">Cache R</th><th class="r">Cache W</th><th class="r">USD</th>
+    </tr></thead>
+    <tbody>
+      {% for stage, t in cost.per_stage.items() %}
+      <tr>
+        <td><span class="stage-pill">{{ stage }}</span></td>
+        <td class="r">{{ t.calls }}</td>
+        <td class="r">{{ t.in }}</td>
+        <td class="r">{{ t.out }}</td>
+        <td class="r">{{ t.cache_r }}</td>
+        <td class="r">{{ t.cache_w }}</td>
+        <td class="r"><strong>${{ '%.4f' % t.usd }}</strong></td>
+      </tr>
+      {% endfor %}
+      <tr class="total-row"><td colspan="6" class="r">TOTAL</td><td class="r"><strong>${{ '%.4f' % cost.total_usd }}</strong></td></tr>
+    </tbody>
+  </table>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Daily spend</h2>
+  {% if not cost.per_day %}<p class="muted">No daily data.</p>{% else %}
+  {% set maxv = (cost.per_day | map(attribute='usd') | max) %}
+  <div class="daily-chart">
+    {% for d in cost.per_day %}
+    <div class="bar-row">
+      <div class="bar-label mono small">{{ d.date }}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width: {{ (d.usd / maxv * 100) if maxv else 0 }}%"></div>
+      </div>
+      <div class="bar-value mono small">${{ '%.4f' % d.usd }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

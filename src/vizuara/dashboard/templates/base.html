@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vizuara — {{ self.title() }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="brand">
+      <span class="brand-mark"></span>
+      <div>
+        <div class="brand-name">Vizuara</div>
+        <div class="brand-sub">Operator dashboard</div>
+      </div>
+    </div>
+    <ul class="nav">
+      <li class="{% if nav.active == 'overview'   %}active{% endif %}"><a href="/">Overview</a></li>
+      <li class="{% if nav.active == 'queue'      %}active{% endif %}"><a href="/queue">Review queue</a></li>
+      <li class="{% if nav.active == 'replies'    %}active{% endif %}"><a href="/replies">Replies</a></li>
+      <li class="{% if nav.active == 'costs'      %}active{% endif %}"><a href="/costs">Costs</a></li>
+      <li class="{% if nav.active == 'confidence' %}active{% endif %}"><a href="/confidence">Confidence</a></li>
+    </ul>
+    <div class="nav-divider"></div>
+    <ul class="nav nav-external">
+      <li><a href="http://127.0.0.1:8765" target="_blank" rel="noopener">Wiki explorer ↗</a></li>
+      <li><a href="https://lumenx-demo.up.railway.app/admin" target="_blank" rel="noopener">LumenX admin ↗</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <div class="env-row">
+        <span class="env-label">Auto-send</span>
+        <span class="badge {% if nav.auto_send_enabled %}badge-on{% else %}badge-off{% endif %}">
+          {{ 'ENABLED' if nav.auto_send_enabled else 'DISABLED' }}
+        </span>
+      </div>
+      <div class="env-row">
+        <span class="env-label">Threshold</span>
+        <span class="env-value">{{ '%.2f' % nav.auto_send_threshold }}</span>
+      </div>
+    </div>
+  </nav>
+
+  <main class="content">
+    <header class="content-head">
+      <h1>{% block title %}{% endblock %}</h1>
+      {% block subtitle %}{% endblock %}
+    </header>
+    <div class="content-body">
+      {% block body %}{% endblock %}
+    </div>
+  </main>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Reply detail{% endblock %}
+{% block subtitle %}
+<p class="muted">
+  <a href="/replies">← all replies</a> ·
+  <code>{{ rec.draft.id }}</code> ·
+  thread <code>{{ rec.draft.thread_id }}</code>
+</p>
+{% endblock %}
+
+{% block body %}
+<section class="card">
+  <h2>Draft</h2>
+  <div class="meta-row">
+    <span class="badge intent-{{ rec.draft.intent|replace('-','_') }}">{{ rec.draft.intent }}</span>
+    {% if rec.draft.product_id_hint %}<span class="badge subtle">{{ rec.draft.product_id_hint }}</span>{% endif %}
+    {% if rec.draft.abstained %}<span class="badge badge-warn">abstained</span>{% endif %}
+    <span class="meta">model: <code>{{ rec.draft.model }}</code></span>
+    <span class="meta">cost: <strong>${{ '%.4f' % (rec.draft.cost_usd or 0) }}</strong></span>
+    <span class="meta">in/out: {{ rec.draft.input_tokens }}/{{ rec.draft.output_tokens }} tok</span>
+    <span class="meta">cache r/w: {{ rec.draft.cache_read_tokens or 0 }}/{{ rec.draft.cache_creation_tokens or 0 }}</span>
+  </div>
+  <div class="draft-box">{{ rec.draft.draft_text }}</div>
+  {% if rec.draft.citations %}
+  <div class="citations-row">
+    <span class="muted small">Citations:</span>
+    {% for cid in rec.draft.citations %}<span class="citation-pill">{{ cid }}</span>{% endfor %}
+  </div>
+  {% endif %}
+</section>
+
+<section class="card collapsible">
+  <details>
+    <summary><h2 style="display:inline">Customer message</h2></summary>
+    <div class="cust-msg">{{ rec.draft.context_window.customer_message }}</div>
+  </details>
+</section>
+
+<section class="card collapsible">
+  <details open>
+    <summary><h2 style="display:inline">Context window <span class="muted small">({{ rec.draft.context_window.estimated_input_tokens }} est tokens)</span></h2></summary>
+    {% set cw = rec.draft.context_window %}
+    <div class="ctx-grid">
+      <div class="ctx-cell">
+        <h3>Intent</h3>
+        <p><strong>{{ cw.intent.intent }}</strong> (conf {{ '%.2f' % cw.intent.confidence }})</p>
+        {% if cw.intent.sub_intent %}<p class="muted small">sub: {{ cw.intent.sub_intent }}</p>{% endif %}
+        <p class="muted small">retrieval query: <code>{{ cw.retrieval_query }}</code></p>
+        <p class="muted small">sensitive: {{ cw.sensitive }}</p>
+      </div>
+      <div class="ctx-cell">
+        <h3>Wiki chunks ({{ cw.wiki_chunks|length }})</h3>
+        {% for c in cw.wiki_chunks %}
+        <div class="ctx-chunk">
+          <div class="chunk-head">
+            <span class="citation-pill">{{ c.chunk_id }}</span>
+            {% if c.forced %}<span class="badge badge-warn small">forced</span>
+            {% else %}<span class="muted small">BM25 {{ '%.2f' % c.score }}</span>{% endif %}
+          </div>
+          <div class="chunk-body">{{ c.text[:240] }}{% if c.text|length > 240 %}…{% endif %}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <h3 style="margin-top:18px">Thread history</h3>
+    <div class="history">
+      {% for m in cw.thread_history %}
+      <div class="msg-line role-{{ m.role }}">
+        <span class="role-tag">{{ m.role }}</span>
+        <span class="msg-text">{{ m.text }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <details>
+      <summary><h3 style="display:inline">House-style summary <span class="muted small">({{ cw.corpus_summary|length }} chars)</span></h3></summary>
+      <pre class="summary-pre">{{ cw.corpus_summary }}</pre>
+    </details>
+  </details>
+</section>
+
+<section class="card">
+  <h2>Edits ({{ rec.edits|length }})</h2>
+  {% if not rec.edits %}
+  <p class="muted">No edits.</p>
+  {% else %}
+  {% for e in rec.edits %}
+  <div class="edit-row">
+    <div class="edit-meta">
+      <span class="muted small">{{ e.ts[:19].replace('T',' ') }}</span>
+      <span>distance <strong>{{ e.edit_distance }}</strong></span>
+      <span>ratio <strong>{{ '%.3f' % e.edit_ratio }}</strong></span>
+      {% if e.was_accepted_as_is %}<span class="badge badge-good">accepted as-is</span>
+      {% else %}<span class="badge badge-warn">edited</span>{% endif %}
+      {% if e.human_reviewer %}<span class="muted small">by {{ e.human_reviewer }}</span>{% endif %}
+    </div>
+    <div class="edit-text">{{ e.final_text }}</div>
+  </div>
+  {% endfor %}
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Send</h2>
+  {% if rec.send %}
+  <p><span class="badge badge-{{ rec.send.mode }}">{{ rec.send.mode }}-sent</span>
+     at {{ rec.send.sent_at[:19].replace('T',' ') }}
+     {% if rec.send.reply_message_id %}· msg <code>{{ rec.send.reply_message_id }}</code>{% endif %}
+     {% if rec.send.confidence is not none %}· conf {{ '%.3f' % rec.send.confidence }}{% endif %}
+  </p>
+  {% else %}
+  <p class="muted">Not sent yet. <a href="/queue#d-{{ rec.draft.id }}">Open in queue →</a></p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Customer ratings ({{ rec.ratings|length }})</h2>
+  {% if not rec.ratings %}<p class="muted">None.</p>{% else %}
+  <ul class="ratings">
+    {% for r in rec.ratings %}
+    <li><strong>{{ r.customer_rating }}/5</strong> at <span class="muted small">{{ r.ts[:19].replace('T',' ') }}</span></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>
+{% endblock %}

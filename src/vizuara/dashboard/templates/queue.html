@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Review queue{% endblock %}
+{% block subtitle %}
+<p class="muted">{{ pending|length }} drafts waiting. Edit if needed, then send.
+  Live-send to LumenX is OFF unless you check the box — synthetic/seed thread ids are blocked from live-send.</p>
+{% endblock %}
+
+{% block body %}
+{% if not pending %}
+  <div class="card empty">
+    <h2>Queue is empty</h2>
+    <p class="muted">All drafts have been sent. Nice.</p>
+  </div>
+{% else %}
+  {% for d in pending %}
+  <article class="queue-card" id="d-{{ d.id }}">
+    <header class="queue-card-head">
+      <div class="qc-meta">
+        <span class="badge intent-{{ d.intent|replace('-','_') }}">{{ d.intent }}</span>
+        {% if d.product_id_hint %}<span class="badge subtle">{{ d.product_id_hint }}</span>{% endif %}
+        {% if d.sensitive %}<span class="badge badge-sensitive">SENSITIVE</span>{% endif %}
+        {% if d.abstained %}<span class="badge badge-warn">ABSTAINED</span>{% endif %}
+        <span class="qc-conf" title="Confidence MLP score">
+          <span class="conf-dot" style="--c: {{ d.intent_confidence or 0 }}"></span>
+          intent {{ '%.2f' % (d.intent_confidence or 0) }}
+        </span>
+        <span class="qc-cost">${{ '%.4f' % (d.cost_usd or 0) }}</span>
+        <span class="qc-thread"><code>{{ d.thread_id }}</code></span>
+      </div>
+      <a class="qc-link" href="/replies/{{ d.id }}">detail →</a>
+    </header>
+
+    <div class="qc-cust">
+      <span class="lbl">Customer:</span>
+      <span class="txt">{{ d.customer_message }}</span>
+    </div>
+
+    <form method="POST" action="/queue/{{ d.id }}/send" class="qc-form">
+      <label class="qc-draft-label" for="t-{{ d.id }}">Draft (editable)</label>
+      <textarea id="t-{{ d.id }}" name="final_text" rows="5">{{ d.latest_edit_text or d.draft_text }}</textarea>
+
+      {% if d.citations %}
+      <div class="qc-citations">
+        <span class="muted small">Cites:</span>
+        {% for cid in d.citations %}<span class="citation-pill">{{ cid }}</span>{% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="qc-actions">
+        <label class="live-check">
+          <input type="checkbox" name="live" value="true">
+          live-send to LumenX
+        </label>
+        <button class="btn btn-primary" type="submit">Send</button>
+      </div>
+    </form>
+  </article>
+  {% endfor %}
+{% endif %}
+{% endblock %}

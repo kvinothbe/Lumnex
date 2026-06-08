@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Replies{% endblock %}
+{% block subtitle %}<p class="muted">Every draft we've produced, paginated. Click for full provenance.</p>{% endblock %}
+
+{% block body %}
+<form method="GET" action="/replies" class="filter-bar">
+  <label>
+    Intent
+    <select name="intent" onchange="this.form.submit()">
+      <option value="">all</option>
+      {% for i in intents %}
+        <option value="{{ i }}" {% if filter_intent == i %}selected{% endif %}>{{ i }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label class="check-row">
+    <input type="checkbox" name="sent_only" value="true" {% if filter_sent_only %}checked{% endif %} onchange="this.form.submit()">
+    sent only
+  </label>
+</form>
+
+<div class="card">
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>When</th><th>Thread</th><th>Intent</th><th>Customer message</th>
+      <th class="r">Cost</th><th>Status</th><th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in rows %}
+    <tr>
+      <td class="mono small">{{ r.ts[:19].replace('T',' ') }}</td>
+      <td class="mono small"><code>{{ r.thread_id }}</code></td>
+      <td><span class="badge intent-{{ r.intent|replace('-','_') }}">{{ r.intent }}</span></td>
+      <td class="trunc">{{ r.customer_message[:90] }}{% if r.customer_message|length > 90 %}…{% endif %}</td>
+      <td class="r">${{ '%.4f' % (r.cost_usd or 0) }}</td>
+      <td>
+        {% if r.send_mode == 'auto' %}<span class="badge badge-auto">auto-sent</span>
+        {% elif r.send_mode == 'human' %}<span class="badge badge-human">human-sent</span>
+        {% else %}<span class="badge subtle">pending</span>
+        {% endif %}
+        {% if r.abstained %}<span class="badge badge-warn">abstained</span>{% endif %}
+      </td>
+      <td><a href="/replies/{{ r.id }}">open →</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

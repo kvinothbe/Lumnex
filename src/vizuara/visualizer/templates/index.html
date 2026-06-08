@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vizuara · Wiki Graph</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
+  <script src="https://unpkg.com/layout-base@2.0.1/layout-base.js"></script>
+  <script src="https://unpkg.com/cose-base@2.2.0/cose-base.js"></script>
+  <script src="https://unpkg.com/cytoscape-fcose@2.2.0/cytoscape-fcose.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"></span>
+      <div>
+        <h1>Vizuara · Wiki Graph</h1>
+        <p class="brand-sub">Knowledge graph of Lumenx products, integrations &amp; policies</p>
+      </div>
+    </div>
+    <div class="legend" id="legend"></div>
+  </header>
+
+  <main class="layout">
+    <section class="panel graph-panel">
+      <div class="graph-toolbar">
+        <input id="filterInput" class="filter-input" type="text" placeholder="Filter nodes by name…" />
+        <button id="resetBtn" class="ghost-btn" title="Reset layout">⟳ Reset</button>
+      </div>
+      <div id="cy"></div>
+      <div class="graph-hint">Drag to pan · scroll to zoom · click a node to inspect</div>
+    </section>
+
+    <aside class="side">
+      <section class="panel chat-panel">
+        <div class="panel-head">
+          <h2>Ask the wiki</h2>
+          <span class="hint">Answers cite source chunks · highlights matching nodes</span>
+        </div>
+        <div id="chat" class="chat-log">
+          <div class="msg system">
+            <p>Try: <em>"What's the refund window for EmailPilot?"</em></p>
+            <p>Or: <em>"Which products integrate with Slack?"</em></p>
+          </div>
+        </div>
+        <form id="chatForm" class="chat-input">
+          <input id="chatBox" type="text" autocomplete="off"
+                 placeholder="Ask anything about Lumenx products…" />
+          <button type="submit" id="sendBtn">Send</button>
+        </form>
+      </section>
+
+      <section class="panel inspector-panel">
+        <div class="panel-head">
+          <h2>Inspector</h2>
+          <span class="hint">Click any node to view its wiki chunks</span>
+        </div>
+        <div id="inspector" class="inspector">
+          <p class="muted">Nothing selected yet.</p>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

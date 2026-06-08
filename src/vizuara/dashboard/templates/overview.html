@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Overview{% endblock %}
+{% block subtitle %}<p class="muted">Replies, costs, and pipeline health at a glance.</p>{% endblock %}
+
+{% block body %}
+<section class="kpis">
+  <div class="kpi">
+    <div class="kpi-label">Cost today</div>
+    <div class="kpi-value">${{ '%.4f' % stats.cost_day_usd }}</div>
+    <div class="kpi-sub">${{ '%.4f' % stats.cost_week_usd }} this week</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Drafts today</div>
+    <div class="kpi-value">{{ stats.drafts_day }}</div>
+    <div class="kpi-sub">{{ stats.drafts_week }} this week · {{ stats.total_drafts }} total</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Pending review</div>
+    <div class="kpi-value">{{ stats.pending_review }}</div>
+    <div class="kpi-sub"><a href="/queue">Open queue →</a></div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Auto-send rate</div>
+    <div class="kpi-value">{{ '%.1f' % stats.auto_send_pct }}%</div>
+    <div class="kpi-sub">{{ stats.sent_auto }} auto · {{ stats.sent_human }} human</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Accepted as-is</div>
+    <div class="kpi-value">{{ '%.1f' % stats.accepted_as_is_pct }}%</div>
+    <div class="kpi-sub">{{ stats.edits_total }} edits logged</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Avg customer rating</div>
+    <div class="kpi-value">{{ '%.1f' % stats.avg_rating }}</div>
+    <div class="kpi-sub">{{ stats.rating_count }} ratings</div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Intent breakdown</h2>
+  {% if stats.intents %}
+  <div class="intent-grid">
+    {% for intent, n in stats.intents.items() %}
+      <div class="intent-tile">
+        <div class="intent-name">{{ intent }}</div>
+        <div class="intent-count">{{ n }}</div>
+      </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">No drafts yet. Seed with <code>python scripts/seed_feedback.py</code>.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Cost by stage <span class="muted small">last 7 days</span></h2>
+  {% if cost.per_stage %}
+  <table class="data-table">
+    <thead>
+      <tr><th>Stage</th><th class="r">Calls</th><th class="r">In tok</th><th class="r">Out tok</th>
+          <th class="r">Cache R</th><th class="r">Cache W</th><th class="r">USD</th></tr>
+    </thead>
+    <tbody>
+      {% for stage, t in cost.per_stage.items() %}
+      <tr>
+        <td><span class="stage-pill">{{ stage }}</span></td>
+        <td class="r">{{ t.calls }}</td>
+        <td class="r">{{ t.in }}</td>
+        <td class="r">{{ t.out }}</td>
+        <td class="r">{{ t.cache_r }}</td>
+        <td class="r">{{ t.cache_w }}</td>
+        <td class="r"><strong>${{ '%.4f' % t.usd }}</strong></td>
+      </tr>
+      {% endfor %}
+      <tr class="total-row">
+        <td colspan="6" class="r">TOTAL</td>
+        <td class="r"><strong>${{ '%.4f' % cost.total_usd }}</strong></td>
+      </tr>
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No cost log entries yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

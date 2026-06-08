@@ -1,0 +1,31 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+.git/
+.github/
+.vscode/
+.idea/
+
+# Local secrets and data — must NEVER ship in the image. Railway provides these
+# via env vars and a mounted volume.
+.env
+*.env
+!.env.example
+data/
+*.db
+*.sqlite*
+*.pt
+*.pth
+*.ckpt
+
+# OS junk
+.DS_Store
+Thumbs.db
+*.swp
