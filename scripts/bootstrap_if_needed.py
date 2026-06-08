@@ -66,6 +66,20 @@ def main() -> int:
         train()
     _step("confidence train", config.DATA_DIR / "confidence.pt", s5)
 
+    # Step 6: seed a few demo drafts so the dashboard shows data on first boot.
+    # Gated on feedback.db being empty so we never inject demo rows on top of real
+    # poller traffic. seed_feedback itself is also idempotent per-message.
+    from vizuara.feedback import open_db
+    with open_db() as conn:
+        n_drafts = conn.execute("SELECT COUNT(*) FROM drafts").fetchone()[0]
+    if n_drafts == 0:
+        print("[bootstrap] RUN  seed feedback — feedback.db has no drafts yet")
+        from scripts.seed_feedback import main as seed_feedback
+        seed_feedback()
+        print("[bootstrap] DONE seed feedback")
+    else:
+        print(f"[bootstrap] SKIP seed feedback — {n_drafts} drafts already present")
+
     print("[bootstrap] all steps complete")
     return 0
 

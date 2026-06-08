@@ -43,5 +43,7 @@ EXPOSE 8000
 #   dashboard service:  START_CMD="uvicorn vizuara.dashboard.app:app --host 0.0.0.0 --port $PORT"
 #   poller service:     START_CMD="python -m vizuara.poller.daemon"
 #   visualizer service: START_CMD="uvicorn vizuara.visualizer.app:app --host 0.0.0.0 --port $PORT"
-# Default falls back to the dashboard so a single-service deploy "just works".
-CMD ["sh", "-c", "${START_CMD:-uvicorn vizuara.dashboard.app:app --host 0.0.0.0 --port $PORT}"]
+# Default falls back to the dashboard START SCRIPT (not bare uvicorn) so a
+# single-service deploy "just works" WITH the data bootstrap — otherwise the
+# dashboard comes up empty (no wiki, all metrics zero).
+CMD ["sh", "-c", "${START_CMD:-sh scripts/start_dashboard.sh}"]

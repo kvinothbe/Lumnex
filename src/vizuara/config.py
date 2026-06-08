@@ -32,6 +32,11 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 LUMENX_DB_PATH = DATA_DIR / "lumenx.db"
 COST_LOG_PATH = DATA_DIR / "cost_log.jsonl"
 
+# Public URL of the wiki-explorer (visualizer) service, if deployed. The dashboard
+# renders a nav link to it only when this is set — otherwise the link is hidden so
+# we don't point at a dead localhost address in production.
+WIKI_EXPLORER_URL = _optional("VIZUARA_WIKI_URL", "")
+
 
 def _bool(name: str, default: bool) -> bool:
     v = os.getenv(name, "").strip().lower()

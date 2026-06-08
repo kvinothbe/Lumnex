@@ -38,6 +38,7 @@ def _nav(active: str) -> dict:
         "active": active,
         "auto_send_enabled": config.AUTO_SEND_ENABLED,
         "auto_send_threshold": config.AUTO_SEND_THRESHOLD,
+        "wiki_url": config.WIKI_EXPLORER_URL,
     }
 
 

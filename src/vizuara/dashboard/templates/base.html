@@ -28,7 +28,7 @@
     </ul>
     <div class="nav-divider"></div>
     <ul class="nav nav-external">
-      <li><a href="http://127.0.0.1:8765" target="_blank" rel="noopener">Wiki explorer ↗</a></li>
+      {% if nav.wiki_url %}<li><a href="{{ nav.wiki_url }}" target="_blank" rel="noopener">Wiki explorer ↗</a></li>{% endif %}
       <li><a href="https://lumenx-demo.up.railway.app/admin" target="_blank" rel="noopener">LumenX admin ↗</a></li>
     </ul>
     <div class="sidebar-footer">
