@@ -26,7 +26,13 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "").strip()
 LUMENX_ADMIN_TOKEN = _required("LUMENX_ADMIN_TOKEN")
 LUMENX_BASE_URL = _optional("LUMENX_BASE_URL", "https://lumenx-demo.up.railway.app")
 
-DATA_DIR = (_PROJECT_ROOT / _optional("VIZUARA_DATA_DIR", "./data")).resolve()
+# Resolve the data dir robustly. An ABSOLUTE VIZUARA_DATA_DIR (e.g. the Railway
+# volume at /data) is used as-is. A RELATIVE value resolves against the current
+# working directory — NOT against this module's location, which lands inside
+# site-packages once the package is pip-installed (the cause of data silently
+# going to /usr/local/lib/python3.11/data on Railway).
+_data_dir = Path(_optional("VIZUARA_DATA_DIR", "./data")).expanduser()
+DATA_DIR = (_data_dir if _data_dir.is_absolute() else (Path.cwd() / _data_dir)).resolve()
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 LUMENX_DB_PATH = DATA_DIR / "lumenx.db"
