@@ -5,8 +5,8 @@
 {% block body %}
 {% if not rep.eval %}
   <div class="card empty">
-    <h2>No confidence checkpoint yet</h2>
-    <p class="muted">Run <code>python -m vizuara.confidence.bootstrap</code> then <code>python -m vizuara.confidence.train</code>.</p>
+    <h2>Confidence model still training</h2>
+    <p class="muted">The confidence model is being prepared during first-time setup. This page populates automatically once training finishes (usually a few minutes after start). Refresh shortly.</p>
   </div>
 {% else %}
 <section class="kpis">
