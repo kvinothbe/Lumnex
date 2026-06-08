@@ -29,6 +29,12 @@ def _chunks_by_id():
     return {c.chunk_id: c for c in load_chunks()}
 
 
+@app.get("/healthz")
+def healthz():
+    """Liveness probe for Railway — no DB/data access, returns 200 immediately."""
+    return {"status": "ok"}
+
+
 @app.get("/")
 def index(request: Request):
     return templates.TemplateResponse(request, "index.html")

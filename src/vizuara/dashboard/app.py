@@ -25,6 +25,14 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
+@app.get("/healthz")
+def healthz():
+    """Liveness probe for Railway. Deliberately touches no DB or data files so it
+    returns 200 the instant uvicorn is up — even while the background bootstrap is
+    still building the volume on first boot."""
+    return {"status": "ok"}
+
+
 def _nav(active: str) -> dict:
     return {
         "active": active,
