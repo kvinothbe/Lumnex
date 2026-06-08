@@ -30,8 +30,10 @@ RUN pip install --index-url https://download.pytorch.org/whl/cpu "torch>=2.2" "n
 COPY scripts/ ./scripts/
 
 # Volume mount target for SQLite, MLP checkpoint, cost log, corpus summary, wiki.
+# NOTE: do NOT add a `VOLUME` instruction — Railway rejects it ("use Railway
+# Volumes"). The /data mount is configured in the Railway dashboard instead;
+# we only need the directory to exist so the path is valid before the mount.
 RUN mkdir -p /data
-VOLUME ["/data"]
 
 # Default port for the dashboard service.
 ENV PORT=8000
